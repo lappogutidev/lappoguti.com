@@ -35,11 +35,14 @@ func mdToHTML(md []byte) []byte {
 func pageHandlerFactory(pages string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := strings.TrimPrefix(r.URL.Path, "/")
+		var path string
 		if id == "" {
-			id = "index"
+			path = "index.md"
+		} else {
+			path = filepath.Join(pages, (id + ".md"))
 		}
 
-		md, err := os.ReadFile(filepath.Join(pages, (id + ".md")))
+		md, err := os.ReadFile(path)
 		if err != nil {
 			fmt.Fprint(w, "custom 404")
 			return

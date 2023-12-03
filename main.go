@@ -35,12 +35,11 @@ func mdToHTML(md []byte) []byte {
 func pageHandlerFactory(pages string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := strings.TrimPrefix(r.URL.Path, "/")
-		var path string
 		if id == "" {
-			path = "index.md"
-		} else {
-			path = filepath.Join(pages, (id + ".md"))
+			http.Redirect(w, r, "/home", http.StatusSeeOther)
+			return
 		}
+		path := filepath.Join(pages, (id + ".md"))
 
 		md, err := os.ReadFile(path)
 		if err != nil {
@@ -55,25 +54,11 @@ func pageHandlerFactory(pages string) http.HandlerFunc {
 	}
 }
 
-func showDir(path string) {
-	entries, err := os.ReadDir(path)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, e := range entries {
-		fmt.Println(e.Name())
-	}
-}
-
 func main() {
 	port := flag.String("p", "8100", "port to serve on")
 	assets := flag.String("assets", "../assets/", "assets directory")
 	pages := flag.String("pages", "../pages", "pages directory")
 	flag.Parse()
-
-	showDir(*assets)
-	showDir(*pages)
 
 	http.HandleFunc("/", pageHandlerFactory(*pages))
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir(*assets))))

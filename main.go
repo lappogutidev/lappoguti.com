@@ -44,6 +44,7 @@ func pageHandlerFactory(pages string) http.HandlerFunc {
 
 		md, err := os.ReadFile(path)
 		if err != nil {
+			log.Println("Missing page: " + id)
 			fmt.Fprint(w, "custom 404")
 			return
 		}
@@ -67,15 +68,15 @@ func showDir(path string) {
 
 func main() {
 	port := flag.String("p", "8100", "port to serve on")
-	assets := flag.String("assets", "../assets", "assets directory")
+	assets := flag.String("assets", "../assets/", "assets directory")
 	pages := flag.String("pages", "../pages", "pages directory")
 	flag.Parse()
 
 	showDir(*assets)
 	showDir(*pages)
 
-	http.Handle("/assets/", http.FileServer(http.Dir(*assets)))
 	http.HandleFunc("/", pageHandlerFactory(*pages))
+	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir(*assets))))
 
 	log.Printf("Serving %s on HTTP port: %s\n", *assets, *port)
 	log.Fatal(http.ListenAndServe(":"+*port, nil))

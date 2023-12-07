@@ -58,7 +58,14 @@ func main() {
 	port := flag.String("p", "8100", "port to serve on")
 	assets := flag.String("assets", "../assets/", "assets directory")
 	pages := flag.String("pages", "../pages", "pages directory")
+	logs := flag.String("logs", "../logs.txt", "logging file")
 	flag.Parse()
+
+	log_file, err := os.Create(*logs)
+	if err != nil {
+		log.Println(err)
+	}
+	log.SetOutput(log_file)
 
 	http.HandleFunc("/", pageHandlerFactory(*pages))
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir(*assets))))
